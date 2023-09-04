@@ -32,13 +32,14 @@ parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--subset', action='store_true')
 parser.add_argument('--eval-interval', default=5, type=int)
 parser.add_argument('--resume', action='store_true')
+parser.add_argument('--batch-size', type=int)
 
 def main():
     accelerator = Accelerator(mixed_precision='fp16', split_batches=True)
     args = parser.parse_args()
-
+    
     cfg = yaml.load(open(args.config, "r"), Loader=yaml.Loader)
-
+    batch_size = cfg['batch_size'] if not args.batch_size else args.batch_size
     logger = init_log('global', logging.INFO)
     logger.propagate = 0
 
@@ -84,11 +85,11 @@ def main():
         trainset_l = Subset(trainset_l, range(64))
     valset = SemiDataset(cfg['dataset'], cfg['data_root'], 'val')
 
-    trainloader_l = DataLoader(trainset_l, batch_size=cfg['batch_size'],
+    trainloader_l = DataLoader(trainset_l, batch_size,
                                pin_memory=True, num_workers=1, drop_last=True)
-    trainloader_u = DataLoader(trainset_u, batch_size=cfg['batch_size'],
+    trainloader_u = DataLoader(trainset_u, batch_size,
                                pin_memory=True, num_workers=1, drop_last=True)
-    valloader = DataLoader(valset, batch_size=1, pin_memory=True, num_workers=1,
+    valloader = DataLoader(valset, batch_size, pin_memory=True, num_workers=1,
                            drop_last=False)
     model, trainloader_l, trainloader_u, optimizer = accelerator.prepare( model, trainloader_l, trainloader_u, optimizer )
     total_iters = len(trainloader_u) * cfg['epochs']
