@@ -41,12 +41,10 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
     with torch.no_grad():
         for img, mask, id in loader:
             
-            img = img.cuda()
-
             if mode == 'sliding_window':
                 grid = cfg['crop_size']
                 b, _, h, w = img.shape
-                final = torch.zeros(b, 19, h, w).cuda()
+                final = torch.zeros(b, 19, h, w)
                 row = 0
                 while row < h:
                     col = 0
@@ -70,9 +68,9 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
             intersection, union, target = \
                 intersectionAndUnion(pred.cpu().numpy(), mask.numpy(), cfg['nclass'], 255)
 
-            reduced_intersection = torch.from_numpy(intersection).cuda()
-            reduced_union = torch.from_numpy(union).cuda()
-            reduced_target = torch.from_numpy(target).cuda()
+            reduced_intersection = torch.from_numpy(intersection)
+            reduced_union = torch.from_numpy(union)
+            reduced_target = torch.from_numpy(target)
 
             if accelerator:
                 reduced_intersection,reduced_union,reduced_target= accelerator.gather_for_metrics((reduced_intersection,reduced_union,reduced_target ))
