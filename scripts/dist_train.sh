@@ -21,9 +21,9 @@ echo "save path is $save_path"
 
 accelerate launch \
     --nproc_per_node=$1 \
-    --master_addr=localhost \
-    --master_port=19500 \
+      --mixed_precision  fp16\
+    --multi_gpu
     --rdzv_backend c10d \
     $method.py \
     --config=$config --labeled-id-path $labeled_id_path --unlabeled-id-path $unlabeled_id_path \
-    --save-path $save_path --port 19500 2>&1 | tee $save_path/$now.log
+    --save-path $save_path  ${@:2} 2>&1 | tee $save_path/$now.log
