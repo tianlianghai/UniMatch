@@ -17,7 +17,6 @@ from supervised import evaluate
 from util.classes import CLASSES
 from util.ohem import ProbOhemCrossEntropy2d
 from util.utils import count_params, init_log, AverageMeter
-from util.dist_helper import setup_distributed
 from accelerate import Accelerator
 
 
@@ -171,7 +170,6 @@ def main():
 
             loss = (loss_x + loss_u_s1 * 0.25 + loss_u_s2 * 0.25 + loss_u_w_fp * 0.5) / 2.0
 
-            torch.distributed.barrier()
 
             optimizer.zero_grad()
             loss.backward()
