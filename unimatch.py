@@ -19,6 +19,7 @@ from util.ohem import ProbOhemCrossEntropy2d
 from util.utils import count_params, init_log, AverageMeter
 from accelerate import Accelerator
 from torch.utils.data import Subset
+from tqdm.auto import tqdm
 
 
 parser = argparse.ArgumentParser(description='Revisiting Weak-to-Strong Consistency in Semi-Supervised Semantic Segmentation')
@@ -116,10 +117,10 @@ def main():
         total_mask_ratio = AverageMeter()
 
         loader = zip(trainloader_l, trainloader_u, trainloader_u)
-
+        pbar = tqdm(loader, disable=not accelerator.is_main_process)
         for i, ((img_x, mask_x),
                 (img_u_w, img_u_s1, img_u_s2, ignore_mask, cutmix_box1, cutmix_box2),
-                (img_u_w_mix, img_u_s1_mix, img_u_s2_mix, ignore_mask_mix, _, _)) in enumerate(loader):
+                (img_u_w_mix, img_u_s1_mix, img_u_s2_mix, ignore_mask_mix, _, _)) in enumerate(pbar):
             
 
             with torch.no_grad():
