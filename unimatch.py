@@ -82,14 +82,14 @@ def main():
                              cfg['crop_size'], args.labeled_id_path, nsample=len(trainset_u.ids))
     
     if args.subset:
-        trainset_u = Subset(trainset_u, range(64))
-        trainset_l = Subset(trainset_l, range(64))
+        trainset_u = Subset(trainset_u, range(256))
+        trainset_l = Subset(trainset_l, range(256))
     valset = SemiDataset(cfg['dataset'], cfg['data_root'], 'val')
 
     trainloader_l = DataLoader(trainset_l, batch_size,
-                               pin_memory=True, num_workers=1, drop_last=True)
+                               pin_memory=True, num_workers=4, drop_last=True)
     trainloader_u = DataLoader(trainset_u, batch_size,
-                               pin_memory=True, num_workers=1, drop_last=True)
+                               pin_memory=True, num_workers=4, drop_last=True)
     valloader = DataLoader(valset, batch_size, pin_memory=True, num_workers=1,
                            drop_last=False)
     model, trainloader_l, trainloader_u, optimizer = accelerator.prepare( model, trainloader_l, trainloader_u, optimizer )
