@@ -1,2 +1,2 @@
 -r requirements/kaggle.txt
--r requirements/local.txt
+# -r requirements/local.txt
