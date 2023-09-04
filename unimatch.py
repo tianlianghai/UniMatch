@@ -40,6 +40,7 @@ def main():
     
     cfg = yaml.load(open(args.config, "r"), Loader=yaml.Loader)
     batch_size = cfg['batch_size'] if not args.batch_size else args.batch_size
+    
     logger = init_log('global', logging.INFO)
     logger.propagate = 0
 
@@ -47,7 +48,7 @@ def main():
     if accelerator.is_main_process:
         all_args = {**cfg, **vars(args)}
         logger.info('{}\n'.format(pprint.pformat(all_args)))
-        
+        logger.info(f'real batch size is {batch_size}')
         writer = SummaryWriter(args.save_path)
         
         os.makedirs(args.save_path, exist_ok=True)
