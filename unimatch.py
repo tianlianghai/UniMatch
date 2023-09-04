@@ -30,6 +30,7 @@ parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=None, type=int)
 parser.add_argument('--subset', action='store_true')
 parser.add_argument('--eval-interval', default=5, type=int)
+parser.add_argument('--resume', action='store_ture')
 
 def main():
     accelerator = Accelerator(mixed_precision='fp16')
@@ -93,7 +94,7 @@ def main():
     previous_best = 0.0
     epoch = -1
     
-    if os.path.exists(os.path.join(args.save_path, 'latest.pth')):
+    if os.path.exists(os.path.join(args.save_path, 'latest.pth')) and args.resume:
         checkpoint = torch.load(os.path.join(args.save_path, 'latest.pth'))
         model.load_state_dict(checkpoint['model'])
         optimizer.load_state_dict(checkpoint['optimizer'])
