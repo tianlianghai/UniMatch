@@ -59,18 +59,17 @@ def main():
     if accelerator.is_main_process:
         logger.info('Total params: {:.1f}M\n'.format(count_params(model)))
 
-    local_rank = int(os.environ["LOCAL_RANK"])
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
  
 
     if cfg['criterion']['name'] == 'CELoss':
-        criterion_l = nn.CrossEntropyLoss(**cfg['criterion']['kwargs']).cuda(local_rank)
+        criterion_l = nn.CrossEntropyLoss(**cfg['criterion']['kwargs'])
     elif cfg['criterion']['name'] == 'OHEM':
-        criterion_l = ProbOhemCrossEntropy2d(**cfg['criterion']['kwargs']).cuda(local_rank)
+        criterion_l = ProbOhemCrossEntropy2d(**cfg['criterion']['kwargs'])
     else:
         raise NotImplementedError('%s criterion is not implemented' % cfg['criterion']['name'])
 
-    criterion_u = nn.CrossEntropyLoss(reduction='none').cuda(local_rank)
+    criterion_u = nn.CrossEntropyLoss(reduction='none')
 
     trainset_u = SemiDataset(cfg['dataset'], cfg['data_root'], 'train_u',
                              cfg['crop_size'], args.unlabeled_id_path)
