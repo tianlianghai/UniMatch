@@ -66,7 +66,7 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
                 pred = model(img).argmax(dim=1)
 
             intersection, union, target = \
-                intersectionAndUnion(pred.cpu().numpy(), mask.numpy(), cfg['nclass'], 255)
+                intersectionAndUnion(pred.cpu().numpy(), mask.cpu().numpy(), cfg['nclass'], 255)
 
             reduced_intersection = torch.from_numpy(intersection)
             reduced_union = torch.from_numpy(union)
