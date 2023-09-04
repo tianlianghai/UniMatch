@@ -82,8 +82,8 @@ def main():
                              cfg['crop_size'], args.labeled_id_path, nsample=len(trainset_u.ids))
     
     if args.subset:
-        trainset_u = Subset(trainset_u, range(256))
-        trainset_l = Subset(trainset_l, range(256))
+        trainset_u = Subset(trainset_u, range(32))
+        trainset_l = Subset(trainset_l, range(32))
     valset = SemiDataset(cfg['dataset'], cfg['data_root'], 'val')
 
     trainloader_l = DataLoader(trainset_l, batch_size,
