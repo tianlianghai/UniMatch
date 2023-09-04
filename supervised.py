@@ -73,7 +73,7 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
             reduced_target = torch.from_numpy(target)
 
             if accelerator:
-                reduced_intersection,reduced_union,reduced_target= accelerator.gather_for_metrics((reduced_intersection,reduced_union,reduced_target ))
+                reduced_intersection,reduced_union,reduced_target= accelerator.gather((reduced_intersection,reduced_union,reduced_target ))
             else:
                 dist.all_reduce(reduced_intersection)
                 dist.all_reduce(reduced_union)
