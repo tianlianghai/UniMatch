@@ -17,6 +17,7 @@ unlabeled_id_path=splits/$dataset/$split/unlabeled.txt
 save_path=exp/$dataset/$method/$exp/$split
 
 mkdir -p $save_path
+echo "save path is $save_path"
 
 accelerate launch \
     --nproc_per_node=$1 \
