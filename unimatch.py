@@ -172,7 +172,7 @@ def main():
 
 
             optimizer.zero_grad()
-            loss.backward()
+            accelerator.backward(loss)
             optimizer.step()
 
             total_loss.update(loss.item())
