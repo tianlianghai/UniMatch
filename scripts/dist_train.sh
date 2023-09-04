@@ -14,7 +14,7 @@ split='732'
 config=configs/${dataset}.yaml
 labeled_id_path=splits/$dataset/$split/labeled.txt
 unlabeled_id_path=splits/$dataset/$split/unlabeled.txt
-save_path={$2}/exp/$dataset/$method/$exp/$split
+save_path=${2}/exp/$dataset/$method/$exp/$split
 
 mkdir -p $save_path
 echo "save path is $save_path"
