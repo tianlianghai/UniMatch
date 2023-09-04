@@ -92,7 +92,7 @@ def main():
                                pin_memory=True, num_workers=4, drop_last=True)
     valloader = DataLoader(valset, batch_size, pin_memory=True, num_workers=1,
                            drop_last=False)
-    model, trainloader_l, trainloader_u, optimizer = accelerator.prepare( model, trainloader_l, trainloader_u, optimizer )
+    model, trainloader_l, trainloader_u, optimizer, valloader = accelerator.prepare( model, trainloader_l, trainloader_u, optimizer, valloader )
     total_iters = len(trainloader_u) * cfg['epochs']
     previous_best = 0.0
     epoch = -1
