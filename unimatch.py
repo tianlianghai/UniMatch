@@ -30,7 +30,7 @@ parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=None, type=int)
 parser.add_argument('--subset', action='store_true')
 parser.add_argument('--eval-interval', default=5, type=int)
-parser.add_argument('--resume', action='store_ture')
+parser.add_argument('--resume', action='store_true')
 
 def main():
     accelerator = Accelerator(mixed_precision='fp16', split_batches=True)
