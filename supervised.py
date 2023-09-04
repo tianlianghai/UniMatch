@@ -19,6 +19,7 @@ from util.classes import CLASSES
 from util.ohem import ProbOhemCrossEntropy2d
 from util.utils import count_params, AverageMeter, intersectionAndUnion, init_log
 from util.dist_helper import setup_distributed
+from accelerate import Accelerator
 
 
 parser = argparse.ArgumentParser(description='Revisiting Weak-to-Strong Consistency in Semi-Supervised Semantic Segmentation')
@@ -30,7 +31,8 @@ parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=None, type=int)
 
 
-def evaluate(model, loader, mode, cfg):
+
+def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None)):
     model.eval()
     assert mode in ['original', 'center_crop', 'sliding_window']
     intersection_meter = AverageMeter()
@@ -72,9 +74,12 @@ def evaluate(model, loader, mode, cfg):
             reduced_union = torch.from_numpy(union).cuda()
             reduced_target = torch.from_numpy(target).cuda()
 
-            dist.all_reduce(reduced_intersection)
-            dist.all_reduce(reduced_union)
-            dist.all_reduce(reduced_target)
+            if accelerator:
+                reduced_intersection,reduced_union,reduced_target= accelerator.gather_for_metrics((reduced_intersection,reduced_union,reduced_target ))
+            else:
+                dist.all_reduce(reduced_intersection)
+                dist.all_reduce(reduced_union)
+                dist.all_reduce(reduced_target)
 
             intersection_meter.update(reduced_intersection.cpu().numpy())
             union_meter.update(reduced_union.cpu().numpy())
