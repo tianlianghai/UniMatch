@@ -33,7 +33,7 @@ parser.add_argument('--eval-interval', default=5, type=int)
 parser.add_argument('--resume', action='store_ture')
 
 def main():
-    accelerator = Accelerator(mixed_precision='fp16')
+    accelerator = Accelerator(mixed_precision='fp16', split_batches=True)
     args = parser.parse_args()
 
     cfg = yaml.load(open(args.config, "r"), Loader=yaml.Loader)
