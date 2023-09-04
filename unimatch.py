@@ -196,7 +196,7 @@ def main():
                 writer.add_scalar('train/loss_w_fp', loss_u_w_fp.item(), iters)
                 writer.add_scalar('train/mask_ratio', mask_ratio, iters)
             
-            if (i % (len(trainloader_u) // 8) == 0) and (rank == 0):
+            if (i % (len(trainloader_u) // 8) == 0) and accelerator.is_main_process:
                 logger.info('Iters: {:}, Total loss: {:.3f}, Loss x: {:.3f}, Loss s: {:.3f}, Loss w_fp: {:.3f}, Mask ratio: '
                             '{:.3f}'.format(i, total_loss.avg, total_loss_x.avg, total_loss_s.avg,
                                             total_loss_w_fp.avg, total_mask_ratio.avg))
