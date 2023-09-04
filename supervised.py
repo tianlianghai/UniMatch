@@ -79,8 +79,8 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
             #     dist.all_reduce(reduced_union)
             #     dist.all_reduce(reduced_target)
 
-            intersection_meter.update(intersection.cpu().numpy())
-            union_meter.update(union.cpu().numpy())
+            intersection_meter.update(intersection)
+            union_meter.update(union)
 
     iou_class = intersection_meter.sum / (union_meter.sum + 1e-10) * 100.0
     mIOU = np.mean(iou_class)
