@@ -64,23 +64,23 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
                     mask = mask[:, start_h:start_h + cfg['crop_size'], start_w:start_w + cfg['crop_size']]
 
                 pred = model(img).argmax(dim=1)
-
+            pred, mask = accelerator.gather_for_metrics((pred, mask))
             intersection, union, target = \
                 intersectionAndUnion(pred.cpu().numpy(), mask.cpu().numpy(), cfg['nclass'], 255)
 
-            reduced_intersection = torch.from_numpy(intersection)
-            reduced_union = torch.from_numpy(union)
-            reduced_target = torch.from_numpy(target)
+            # reduced_intersection = torch.from_numpy(intersection)
+            # reduced_union = torch.from_numpy(union)
+            # reduced_target = torch.from_numpy(target)
 
-            if accelerator:
-                reduced_intersection,reduced_union,reduced_target= accelerator.gather((reduced_intersection,reduced_union,reduced_target ))
-            else:
-                dist.all_reduce(reduced_intersection)
-                dist.all_reduce(reduced_union)
-                dist.all_reduce(reduced_target)
+            # if accelerator:
+            #     reduced_intersection,reduced_union,reduced_target= accelerator.gather((reduced_intersection,reduced_union,reduced_target ))
+            # else:
+            #     dist.all_reduce(reduced_intersection)
+            #     dist.all_reduce(reduced_union)
+            #     dist.all_reduce(reduced_target)
 
-            intersection_meter.update(reduced_intersection.cpu().numpy())
-            union_meter.update(reduced_union.cpu().numpy())
+            intersection_meter.update(intersection.cpu().numpy())
+            union_meter.update(union.cpu().numpy())
 
     iou_class = intersection_meter.sum / (union_meter.sum + 1e-10) * 100.0
     mIOU = np.mean(iou_class)
