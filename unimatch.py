@@ -29,7 +29,7 @@ parser.add_argument('--save-path', type=str, required=True)
 parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=None, type=int)
 parser.add_argument('--subset', action='store_true')
-
+parser.add_argument('--eval-interval', default=5, type=int)
 
 def main():
     accelerator = Accelerator(mixed_precision='fp16')
@@ -208,30 +208,31 @@ def main():
                                             total_loss_w_fp.avg, total_mask_ratio.avg))
 
         eval_mode = 'sliding_window' if cfg['dataset'] == 'cityscapes' else 'original'
-        mIoU, iou_class = evaluate(model, valloader, eval_mode, cfg, accelerator)
+        if epoch % args.eval_interval == 0:
+            mIoU, iou_class = evaluate(model, valloader, eval_mode, cfg, accelerator)
 
-        if accelerator.is_main_process:
-            for (cls_idx, iou) in enumerate(iou_class):
-                logger.info('***** Evaluation ***** >>>> Class [{:} {:}] '
-                            'IoU: {:.2f}'.format(cls_idx, CLASSES[cfg['dataset']][cls_idx], iou))
-            logger.info('***** Evaluation {} ***** >>>> MeanIoU: {:.2f}\n'.format(eval_mode, mIoU))
-            
-            writer.add_scalar('eval/mIoU', mIoU, epoch)
-            for i, iou in enumerate(iou_class):
-                writer.add_scalar('eval/%s_IoU' % (CLASSES[cfg['dataset']][i]), iou, epoch)
+            if accelerator.is_main_process:
+                for (cls_idx, iou) in enumerate(iou_class):
+                    logger.info('***** Evaluation ***** >>>> Class [{:} {:}] '
+                                'IoU: {:.2f}'.format(cls_idx, CLASSES[cfg['dataset']][cls_idx], iou))
+                logger.info('***** Evaluation {} ***** >>>> MeanIoU: {:.2f}\n'.format(eval_mode, mIoU))
+                
+                writer.add_scalar('eval/mIoU', mIoU, epoch)
+                for i, iou in enumerate(iou_class):
+                    writer.add_scalar('eval/%s_IoU' % (CLASSES[cfg['dataset']][i]), iou, epoch)
 
-        is_best = mIoU > previous_best
-        previous_best = max(mIoU, previous_best)
-        if accelerator.is_main_process:
-            checkpoint = {
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'epoch': epoch,
-                'previous_best': previous_best,
-            }
-            torch.save(checkpoint, os.path.join(args.save_path, 'latest.pth'))
-            if is_best:
-                torch.save(checkpoint, os.path.join(args.save_path, 'best.pth'))
+            is_best = mIoU > previous_best
+            previous_best = max(mIoU, previous_best)
+            if accelerator.is_main_process:
+                checkpoint = {
+                    'model': model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'epoch': epoch,
+                    'previous_best': previous_best,
+                }
+                torch.save(checkpoint, os.path.join(args.save_path, 'latest.pth'))
+                if is_best:
+                    torch.save(checkpoint, os.path.join(args.save_path, 'best.pth'))
 
 
 if __name__ == '__main__':
