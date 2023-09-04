@@ -32,7 +32,7 @@ parser.add_argument('--port', default=None, type=int)
 
 
 
-def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None)):
+def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
     model.eval()
     assert mode in ['original', 'center_crop', 'sliding_window']
     intersection_meter = AverageMeter()
