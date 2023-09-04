@@ -18,6 +18,7 @@ from util.classes import CLASSES
 from util.ohem import ProbOhemCrossEntropy2d
 from util.utils import count_params, init_log, AverageMeter
 from accelerate import Accelerator
+from torch.utils.data import Subset
 
 
 parser = argparse.ArgumentParser(description='Revisiting Weak-to-Strong Consistency in Semi-Supervised Semantic Segmentation')
@@ -27,6 +28,7 @@ parser.add_argument('--unlabeled-id-path', type=str, required=True)
 parser.add_argument('--save-path', type=str, required=True)
 parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=None, type=int)
+parser.add_argument('--subset', action='store_true')
 
 
 def main():
@@ -74,6 +76,10 @@ def main():
                              cfg['crop_size'], args.unlabeled_id_path)
     trainset_l = SemiDataset(cfg['dataset'], cfg['data_root'], 'train_l',
                              cfg['crop_size'], args.labeled_id_path, nsample=len(trainset_u.ids))
+    
+    if args.subset:
+        trainset_u = Subset(trainset_u, range(64))
+        trainset_l = Subset(trainset_l, range(64))
     valset = SemiDataset(cfg['dataset'], cfg['data_root'], 'val')
 
     trainloader_l = DataLoader(trainset_l, batch_size=cfg['batch_size'],
