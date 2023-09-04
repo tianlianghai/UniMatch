@@ -6,7 +6,9 @@ data_root: /root/data/VOC2012
 
 # arguments for training
 epochs: 80
-batch_size: 2 # per GPU x 4 GPUs
+# batch_size: 2 # per GPU x 4 GPUs
+batch_size: 8 # per GPU x 4 GPUs
+
 lr: 0.001
 lr_multi: 10.0
 criterion:
