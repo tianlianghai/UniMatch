@@ -15,9 +15,11 @@ config=configs/${dataset}.yaml
 labeled_id_path=splits/$dataset/$split/labeled.txt
 unlabeled_id_path=splits/$dataset/$split/unlabeled.txt
 save_path=${1}exp/$dataset/$method/$exp/$split
-echo "save_path is $save_path"
+
 mkdir -p $save_path
+echo "save path is $save_path"
+
 python \
     $method.py \
     --config=$config --labeled-id-path $labeled_id_path --unlabeled-id-path $unlabeled_id_path \
-    --save-path $save_path ${@:2} 2>&1 | tee $save_path/$now.log
+    --save-path $save_path  ${@:2} 2>&1 | tee $save_path/$now.log
