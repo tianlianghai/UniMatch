@@ -6,7 +6,6 @@ import pprint
 import torch
 import numpy as np
 from torch import nn
-import torch.distributed as dist
 import torch.backends.cudnn as cudnn
 from torch.optim import SGD
 from torch.utils.data import DataLoader
