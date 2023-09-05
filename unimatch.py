@@ -63,8 +63,11 @@ def main():
     
     if accelerator.is_main_process:
         logger.info('Total params: {:.1f}M\n'.format(count_params(model)))
-
-    model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+    if accelerator.num_processes > 1:
+        logger.info("using sync bn")
+        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+    else: 
+        logger.info("not using sync bn")
  
 
     if cfg['criterion']['name'] == 'CELoss':
