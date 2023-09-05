@@ -20,6 +20,7 @@ from util.ohem import ProbOhemCrossEntropy2d
 from util.utils import count_params, AverageMeter, intersectionAndUnion, init_log
 from util.dist_helper import setup_distributed
 from accelerate import Accelerator
+from tqdm.auto import tqdm
 
 
 parser = argparse.ArgumentParser(description='Revisiting Weak-to-Strong Consistency in Semi-Supervised Semantic Segmentation')
@@ -37,9 +38,9 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
     assert mode in ['original', 'center_crop', 'sliding_window']
     intersection_meter = AverageMeter()
     union_meter = AverageMeter()
-
+    pbar = tqdm(loader,disable= not accelerator.is_main_process)
     with torch.no_grad():
-        for img, mask, id in loader:
+        for img, mask, id in pbar:
             
             if mode == 'sliding_window':
                 grid = cfg['crop_size']
