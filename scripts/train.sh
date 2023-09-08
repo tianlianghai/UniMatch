@@ -8,7 +8,7 @@ now=$(date +"%Y%m%d_%H%M%S")
 # split: ['92', '1_16', 'u2pl_1_16', ...]. Please check directory './splits/$dataset' for concrete splits
 dataset='pascal'
 method='unimatch'
-exp='r101'
+exp='r50'
 split='732'
 
 config=configs/${dataset}.yaml

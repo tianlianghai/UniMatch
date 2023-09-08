@@ -20,6 +20,7 @@ from util.utils import count_params, init_log, AverageMeter
 from accelerate import Accelerator
 from torch.utils.data import Subset
 from tqdm.auto import tqdm
+import time
 
 
 parser = argparse.ArgumentParser(description='Revisiting Weak-to-Strong Consistency in Semi-Supervised Semantic Segmentation')
@@ -120,13 +121,15 @@ def main():
         total_loss_s = AverageMeter()
         total_loss_w_fp = AverageMeter()
         total_mask_ratio = AverageMeter()
+        total_time_taken = AverageMeter()
 
         loader = zip(trainloader_l, trainloader_u, trainloader_u)
         pbar = tqdm(loader, disable=not accelerator.is_main_process, ncols=100)
         for i, ((img_x, mask_x),
                 (img_u_w, img_u_s1, img_u_s2, ignore_mask, cutmix_box1, cutmix_box2),
                 (img_u_w_mix, img_u_s1_mix, img_u_s2_mix, ignore_mask_mix, _, _)) in enumerate(pbar):
-            
+            if accelerator.is_main_process:
+                start_batch_time = time.time()
 
             with torch.no_grad():
                 model.eval()
@@ -208,11 +211,14 @@ def main():
                 writer.add_scalar('train/loss_s', (loss_u_s1.item() + loss_u_s2.item()) / 2.0, iters)
                 writer.add_scalar('train/loss_w_fp', loss_u_w_fp.item(), iters)
                 writer.add_scalar('train/mask_ratio', mask_ratio, iters)
+                end_batch_time = time.time()
+                total_time_taken.update(end_batch_time - start_batch_time)
             
             if (i % (len(trainloader_u) // 8) == 0) and accelerator.is_main_process:
+                eta_min = total_time_taken.avg * (len(trainloader_l) - 1 - i) / 60
                 logger.info('Iters: {:}, Total loss: {:.3f}, Loss x: {:.3f}, Loss s: {:.3f}, Loss w_fp: {:.3f}, Mask ratio: '
-                            '{:.3f}'.format(i, total_loss.avg, total_loss_x.avg, total_loss_s.avg,
-                                            total_loss_w_fp.avg, total_mask_ratio.avg))
+                            '{:.3f}, eta: {:.2f}'.format(i, total_loss.avg, total_loss_x.avg, total_loss_s.avg,
+                                            total_loss_w_fp.avg, total_mask_ratio.avg, eta_min ))
 
         eval_mode = 'sliding_window' if cfg['dataset'] == 'cityscapes' else 'original'
         if epoch % args.eval_interval == 0:

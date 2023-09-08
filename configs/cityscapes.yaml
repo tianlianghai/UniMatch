@@ -2,7 +2,7 @@
 dataset: cityscapes
 nclass: 19
 crop_size: 801
-data_root: Your/Cityscapes/Path
+data_root: /root/data/cityscapes
 
 # arguments for training
 epochs: 240
@@ -18,6 +18,6 @@ criterion:
 conf_thresh: 0
 
 # arguments for model
-backbone: resnet101
+backbone: resnet50
 replace_stride_with_dilation: [False, False, True]
 dilations: [6, 12, 18]
