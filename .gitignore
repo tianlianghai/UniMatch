@@ -1,7 +1,4 @@
-exp
-<<<<<<< HEAD
-__pycache__
-=======
+exp*
 __pycache__
 pretrained*
->>>>>>> master
+

@@ -64,7 +64,9 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
                     mask = mask[:, start_h:start_h + cfg['crop_size'], start_w:start_w + cfg['crop_size']]
 
                 pred = model(img).argmax(dim=1)
-            pred, mask = accelerator.gather_for_metrics((pred, mask))
+            # pred, mask = accelerator.gather_for_metrics((pred, mask))
+            # pred = accelerator.gather_for_metrics(pred)
+            # mask = accelerator.gather_for_metrics(mask)
             intersection, union, target = \
                 intersectionAndUnion(pred.cpu().numpy(), mask.cpu().numpy(), cfg['nclass'], 255)
 
@@ -81,7 +83,8 @@ def evaluate(model, loader, mode, cfg, accelerator:Accelerator=None):
 
             intersection_meter.update(intersection)
             union_meter.update(union)
-
+    intersection_meter.synchronize_between_processes()
+    union_meter.synchronize_between_processes()
     iou_class = intersection_meter.sum / (union_meter.sum + 1e-10) * 100.0
     mIOU = np.mean(iou_class)
 

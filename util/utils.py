@@ -1,6 +1,10 @@
+import datetime
 import numpy as np
 import logging
 import os
+from torch import distributed as dist
+import torch 
+
 
 
 def count_params(model):
@@ -64,7 +68,14 @@ class AverageMeter(object):
             self.count = 0
             self.sum = 0.0
         self.val = 0.0
-        self.avg = 0.0
+        
+    
+    def synchronize_between_processes(self):
+        """
+        Warning: does not synchronize the deque!
+        """
+        self.count = int(reduce_across_processes(self.count))
+        self.sum = reduce_across_processes(self.sum).cpu().numpy()
 
     def update(self, val, num=1):
         if self.length > 0:
@@ -75,20 +86,21 @@ class AverageMeter(object):
                 del self.history[0]
 
             self.val = self.history[-1]
-            self.avg = np.mean(self.history)
         else:
             self.val = val
-            self.sum += val * num
+            # self.sum += val * num
+            self.sum += val
             self.count += num
-            self.avg = self.sum / self.count
-
+    @property
+    def avg(self):
+        return self.sum / self.count
 
 def intersectionAndUnion(output, target, K, ignore_index=255):
     # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
     assert output.ndim in [1, 2, 3]
     assert output.shape == target.shape
     output = output.reshape(output.size).copy()
-    target = target.reshape(target.size)
+    target = target.reshape(target.size)  # flatten
     output[np.where(target == ignore_index)[0]] = ignore_index
     intersection = output[np.where(output == target)[0]]
     area_intersection, _ = np.histogram(intersection, bins=np.arange(K + 1))
@@ -101,7 +113,7 @@ def intersectionAndUnion(output, target, K, ignore_index=255):
 logs = set()
 
 
-def init_log(name, level=logging.INFO):
+def init_log(name, level=logging.INFO, save_dir = '.'):
     if (name, level) in logs:
         return
     logs.add((name, level))
@@ -118,4 +130,29 @@ def init_log(name, level=logging.INFO):
     formatter = logging.Formatter(format_str)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    current_time = datetime.datetime.now()
+    filename =os.path.join(save_dir,  current_time.strftime("%Y%m%d_%H%M%S") + '.log')
+    fh  = logging.FileHandler(filename)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
     return logger
+
+
+def reduce_across_processes(val):
+    if not is_dist_avail_and_initialized():
+        # nothing to sync, but we still convert to tensor for consistency with the distributed case.
+        return torch.tensor(val)
+
+    t = torch.tensor(val, device="cuda")
+    dist.barrier()
+    dist.all_reduce(t)
+    return t
+
+
+
+def is_dist_avail_and_initialized():
+    if not dist.is_available():
+        return False
+    if not dist.is_initialized():
+        return False
+    return True
