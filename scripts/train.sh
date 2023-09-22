@@ -21,7 +21,7 @@
 
 python \
     unimatch.py \
-        ${@} 
+        "${@}" 
     # --config=$config --labeled-id-path $labeled_id_path --unlabeled-id-path $unlabeled_id_path \
     # --save-path $save_path \
     # 2>&1 \ 
